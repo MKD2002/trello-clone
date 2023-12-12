@@ -1,26 +1,50 @@
-"use server"
-import { db } from '@/lib/db';
-import { revalidatePath } from 'next/cache';
-import {z} from 'zod'
+"use server";
 
+import { z } from "zod";
 
+import { db } from "@/lib/db";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+
+export type State = {
+  errors?: {
+    title?: string[];
+  },
+  message?: string | null;
+}
 
 const CreateBoard = z.object({
-    title:z.string()
-})
+  title: z.string().min(3, {
+    message: "Minimum length of 3 letters is required"
+  })
+});
 
-export async function create(formData: FormData) {
+export async function create(prevState: State, formData: FormData) {
+  const validatedFields = CreateBoard.safeParse({
+    title: formData.get("title"),
+  });
 
-   const {title} = CreateBoard.parse({
-    title: formData.get('title')
-   })
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: "Missing fields."
+    }
+  }
 
+  const { title } = validatedFields.data;
+
+  try {
     await db.board.create({
-        data: {
-            title,
-        }
+      data: {
+        title,
+      }
     });
-
-    revalidatePath("/organization/org_2ZAJ2tPbU0Zhsw0bQMAI6OFlbrD")
+  } catch(error) {
+    return {
+      message: "Database Error",
+    }
+  }
+ 
+  revalidatePath("/organization/org_2ZAJ2tPbU0Zhsw0bQMAI6OFlbrD");
+  redirect("/organization/org_2ZAJ2tPbU0Zhsw0bQMAI6OFlbrD");
 }
-// TODO: start from  3:29:13
