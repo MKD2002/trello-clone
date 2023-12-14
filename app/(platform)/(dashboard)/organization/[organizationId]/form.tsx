@@ -3,23 +3,19 @@
 import { create } from "@/actions/create-board"
 import { Button } from "@/components/ui/button"
 import { useFormState } from "react-dom"
+import { FormInput } from "./form-input"
+import { FormButton } from "./form-button"
 
 export const Form = () => {
-    const initialState = {message: null, errors: {} }
-    const [state, dispatch] = useFormState(create , initialState)
+    const initialState = { message: null, errors: {} }
+    const [state, dispatch] = useFormState(create, initialState)
 
     return (
         <form action={dispatch}>
-                <input
-                    id="title"
-                    name="title"
-                    placeholder="Enter a board title"
-                    required
-                    className="border-black border p-1"
-                />
-                <Button type="submit">
-                    Submit
-                </Button>
-            </form>
+            <div className="flex flex-col space-y-2">
+                <FormInput errors={state?.errors} />
+            </div>
+            <FormButton />
+        </form>
     )
 }
